@@ -983,7 +983,10 @@
     /* 첫 화면에는 탐색에 필요한 세 카테고리와 필터만 남긴다. */
     .category-bar { gap: 7px; margin-top: 4px; }
     .category-bar .cat-toggle,
-    .category-bar .chip:nth-of-type(n+5) { display: none; }
+    .category-bar .chip:not(#chip-restaurant):not(#chip-cafe):not(#chip-bar):not(.chip-filter):not(.chip-language) { display: none; }
+    .category-bar #chip-restaurant,
+    .category-bar #chip-cafe,
+    .category-bar #chip-bar { display:inline-flex !important; }
     .category-bar .chip-filter {
       display: inline-flex !important; align-items: center; gap: 5px;
       border-color: rgba(255,255,255,.18); color: var(--text);
