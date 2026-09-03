@@ -6,3 +6,5 @@ HONGDAE_TAG_GUIDELINES.md
 .agents/
 .codex/
 .git/
+*.zip
+.env*

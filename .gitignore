@@ -8,3 +8,5 @@ HONGDAE_TAG_GUIDELINES.md
 *.zip
 .agents/
 .codex/
+.vercel
+.env*
