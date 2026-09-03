@@ -1,0 +1,10 @@
+.DS_Store
+.vercel/
+admin.html
+api/
+supabase/
+SUPABASE_SETUP.md
+HONGDAE_TAG_GUIDELINES.md
+*.zip
+.agents/
+.codex/
