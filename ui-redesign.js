@@ -52,13 +52,9 @@
 
   function openProfile() {
     closeSurface();
-    if (!userTastes.length) { openTasteModal(); return; }
-    const sheet = document.querySelector('.profile-sheet');
-    const savedCount = Object.keys(bookmarks || {}).length;
-    sheet.querySelector('.profile-sheet-note').textContent = `취향 ${userTastes.length}개 · 저장 ${savedCount}곳`;
-    sheet.querySelector('.profile-tastes').innerHTML = userTastes.map((tag) => `<span>#${escapeHtml(tag)}</span>`).join('');
-    sheet.classList.add('open');
     setActive('me');
+    if (window.HongdaeLocal?.openProfile) window.HongdaeLocal.openProfile();
+    else if (window.HongdaeExperience?.openProfile) window.HongdaeExperience.openProfile();
   }
 
   function addSurfaces() {
@@ -68,13 +64,6 @@
     results.innerHTML = '<div class="map-result-head"><strong class="map-result-title">지금 볼 만한 가게</strong><span class="map-result-sub"></span><button class="sheet-close" aria-label="결과 닫기">✕</button></div><div class="result-carousel"></div>';
     results.querySelector('.sheet-close').addEventListener('click', closeSurface);
     document.body.append(results);
-    const profile = document.createElement('section');
-    profile.className = 'profile-sheet';
-    profile.innerHTML = '<div class="profile-sheet-card"><div class="profile-sheet-top"><div class="profile-avatar">나</div><div><div class="profile-sheet-title">내 취향</div><div class="profile-sheet-note"></div></div><button class="sheet-close" aria-label="내 취향 닫기">✕</button></div><div class="profile-tastes"></div><div class="profile-actions"><button class="primary" data-action="taste">취향 조정하기</button><button data-action="saved">저장한 가게 보기</button></div></div>';
-    profile.querySelector('.sheet-close').addEventListener('click', closeSurface);
-    profile.querySelector('[data-action="taste"]').addEventListener('click', () => { closeSurface(); openTasteModal(); });
-    profile.querySelector('[data-action="saved"]').addEventListener('click', () => { showBookmarks(); openResults(); });
-    document.body.append(profile);
   }
 
   function addNavigation() {

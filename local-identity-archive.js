@@ -16,6 +16,7 @@
     ['visitor', '홍대 방문자', '🧭']
   ];
   const axes = [
+    { id:'indie', label:'체인점 간판이 보이면 흥미가 식는', copy:'프랜차이즈를 빼고 로컬·인디 장소만', excludeFranchise:true },
     { id:'hidden', label:'검색 2페이지부터 진짜라고 믿는 편', copy:'알고리즘 밖에 남은 작은 장소', allTags:['홍대병','로컬단골'] },
     { id:'quiet', label:'혼자 있고 싶지만 집엔 가기 싫은', copy:'말을 걸지 않는 조용한 구석', allTags:['조용한','혼밥'] },
     { id:'loud', label:'음악 때문에 대화를 포기해도 되는', copy:'취향이 소음보다 큰 곳', anyTags:['시끌벅적'] },
@@ -39,6 +40,7 @@
   const getMemories = () => readJSON(MEMORY_KEY, []);
   const matchesAxis = (store, axis) => {
     const tags = store.tags || [];
+    if (axis.excludeFranchise && typeof isFranchise === 'function' && isFranchise(store)) return false;
     if (axis.allTags && !axis.allTags.every(tag => tags.includes(tag))) return false;
     if (axis.anyTags && !axis.anyTags.some(tag => tags.includes(tag))) return false;
     if (axis.service && !(store.services || []).includes(axis.service) && !tags.includes('심야영업')) return false;
@@ -76,8 +78,12 @@
     }));
     root.querySelector('[data-apply]').addEventListener('click', () => {
       const picked = axes.filter(a => selected.has(a.id));
-      // 선택 좌표 가운데 하나라도 그 좌표의 최소 근거를 모두 충족한 장소만 보여준다.
-      const matched = stores.filter(s => picked.some(axis => matchesAxis(s, axis)) && s.status !== 'closed');
+      const constraints = picked.filter(axis => axis.excludeFranchise);
+      const tastes = picked.filter(axis => !axis.excludeFranchise);
+      // 로컬·인디는 전체 결과에 적용하고, 나머지 감성 좌표는 하나 이상 맞는 장소를 보여준다.
+      const matched = stores.filter(s => s.status !== 'closed'
+        && constraints.every(axis => matchesAxis(s, axis))
+        && (!tastes.length || tastes.some(axis => matchesAxis(s, axis))));
       const reasons = new Map(matched.map(s => [s.id, picked.filter(axis => matchesAxis(s, axis)).map(a => a.label)]));
       window.hongdaeModeResults = matched;
       root.remove();
@@ -179,14 +185,18 @@
       <h2>나는 이런 방식으로<br>홍대에서 살아갑니다</h2>
       ${isCampusVerified() ? '<div class="hla-campus-badge">✓ 캠퍼스 퀴즈 인증 · 홍대生</div>' : ''}
       <div class="hla-profile-tags">${summary.map(item => `<span>${escapeHtml(item)}</span>`).join('')}</div>
-      <p class="hla-copy">앞으로 추천과 제보에는 별점 대신 이 관점이 함께 표시됩니다.</p>
+      <p class="hla-copy">신분·취향·저장 기록을 한곳에서 관리합니다.</p>
       <button class="hla-primary" data-edit-identity>나는 누구인지 다시 선택</button>
-      <button class="hla-secondary" data-open-taste>취향 태그와 저장 기록 보기</button>`);
+      <button class="hla-secondary" data-open-taste>취향 다시 고르기</button>
+      <button class="hla-secondary" data-open-saved>저장한 가게 보기 · ${Object.keys(bookmarks || {}).length}</button>
+      <button class="hla-secondary" data-open-feedback>장소·기능 제보하기</button>`);
     root.querySelector('[data-edit-identity]').addEventListener('click', () => { root.remove(); openIdentity(openProfile); });
     root.querySelector('[data-open-taste]').addEventListener('click', () => {
       root.remove();
-      if (window.HongdaeExperience?.originalOpenProfile) window.HongdaeExperience.originalOpenProfile();
+      if (window.HongdaeExperience?.openTasteJourney) window.HongdaeExperience.openTasteJourney();
     });
+    root.querySelector('[data-open-saved]').addEventListener('click', () => { root.remove(); showBookmarks(); HongdaeUI.openResults(); });
+    root.querySelector('[data-open-feedback]').addEventListener('click', () => { root.remove(); window.HongdaeFeedback?.open('place'); });
   }
 
   function memoryCard(store) {
@@ -241,7 +251,9 @@
       <div class="hla-head"><span class="hla-kicker">홍대史 · HONGDAE ARCHIVE</span><button data-hla-close aria-label="닫기">✕</button></div>
       <h2>사라져도<br>지도에서 지우지 않습니다</h2>
       <p class="hla-copy">폐업한 가게와 사람들이 남긴 장소의 기억을 함께 봅니다.</p>
+      <button class="hla-primary" data-report-place>사라진 장소·기억 제보하기</button>
       <div class="hla-results">${items.map(s => `<button data-place="${s.id}"><span class="hla-place-emoji">${s.status === 'closed' ? '🪦' : '📼'}</span><span><b>${escapeHtml(s.name)}</b><small>${s.status === 'closed' ? `${s.closedYear || '기록된'} 폐업 · ` : ''}${getMemories().filter(m=>m.placeId===s.id).length}개의 기억</small></span><em>${s.dong || '홍대'}</em></button>`).join('') || '<div class="hla-empty">아직 모인 기록이 없어요. 장소 상세에서 첫 기억을 남겨보세요.</div>'}</div>`);
+    root.querySelector('[data-report-place]').addEventListener('click', () => { root.remove(); window.HongdaeFeedback?.open('place'); });
     root.querySelectorAll('[data-place]').forEach(button => button.addEventListener('click', () => { root.remove(); selectStore(Number(button.dataset.place)); }));
   }
 
@@ -260,7 +272,7 @@
       const button = document.createElement('button');
       button.className = 'app-menu-item';
       button.dataset.hlaArchive = '1';
-      button.innerHTML = '<span style="width:18px;text-align:center">📼</span>홍대史 · 장소 아카이브';
+      button.innerHTML = '<span style="width:18px;text-align:center">📼</span>사라진 가게들';
       button.addEventListener('click', () => { menu.classList.remove('open'); openArchive(); });
       menu.insertBefore(button, menu.querySelector('.app-menu-sep'));
     }

@@ -959,9 +959,40 @@
   /* ── 인터페이스 개선 시안: 지도에 집중하는 탐색 구조 ─────────────────── */
   .app-tabs { display: none; }
   .chip-filter { display: none; }
-  /* 모바일 전용 시트는 데스크톱 문서 흐름에 섞여 보이지 않게 한다. */
+  /* 데스크톱도 모바일과 같은 탐색 구조를 사용하고, 폭과 여백만 넓힌다. */
   @media (min-width: 701px) {
-    .map-result-sheet, .profile-sheet { display: none !important; }
+    .layout, .detail { bottom: 94px; }
+    .bottom-fab-row { bottom: 108px; }
+    .btn-locate-map { bottom: 211px; }
+    .btn-feed-map { bottom: 156px; }
+    .app-tabs {
+      display:grid; grid-template-columns:repeat(5,1fr); align-items:stretch;
+      position:fixed; z-index:700; left:50%; bottom:16px; transform:translateX(-50%);
+      width:min(680px,calc(100vw - 40px)); height:68px;
+      border:1px solid rgba(255,255,255,.12); border-radius:22px;
+      background:rgba(32,12,15,.96); box-shadow:0 14px 36px rgba(0,0,0,.38); overflow:hidden;
+    }
+    .app-tab { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; border:0; background:transparent; color:#9c8789; font:650 10px 'Pretendard',sans-serif; cursor:pointer; }
+    .app-tab svg { width:21px; height:21px; }
+    .app-tab.active { color:#ff536c; }
+    .app-tab.active::before { content:''; position:absolute; top:0; width:32px; height:2px; border-radius:0 0 4px 4px; background:currentColor; }
+    .app-tab.has-saves::after { content:''; position:absolute; top:14px; right:calc(50% - 18px); width:5px; height:5px; border-radius:50%; background:#ff536c; }
+    .map-result-sheet { display:none; position:fixed; z-index:650; left:50%; bottom:94px; transform:translateX(-50%); width:min(920px,calc(100vw - 48px)); padding:14px 0 18px; border:1px solid rgba(255,255,255,.1); border-radius:22px; background:rgba(43,7,12,.96); box-shadow:0 18px 46px rgba(0,0,0,.42); pointer-events:none; }
+    .map-result-sheet.open { display:block; }
+    .map-result-head,.result-carousel { pointer-events:auto; }
+    .map-result-head { display:flex; align-items:center; padding:0 18px 10px; color:var(--text); }
+    .map-result-title { font-size:15px; font-weight:800; }
+    .map-result-sub { margin-left:7px; color:var(--muted); font-size:11px; }
+    .sheet-close { margin-left:auto; width:30px; height:30px; border:1px solid var(--border); border-radius:50%; background:var(--surface); color:var(--muted); }
+    .result-carousel { display:flex; gap:10px; padding:0 18px; overflow-x:auto; scrollbar-width:none; }
+    .result-card { width:270px; min-height:128px; flex:none; padding:15px; border:1px solid var(--border); border-radius:18px; background:var(--surface); color:var(--text); text-align:left; font-family:'Pretendard',sans-serif; }
+    .result-card-name { display:flex; gap:7px; align-items:center; font-size:15px; font-weight:800; }
+    .result-match { margin-left:auto; color:#ff7185; font-size:11px; }
+    .result-card-meta { margin-top:8px; color:var(--muted); font-size:12px; }
+    .result-card-tags { display:flex; gap:5px; margin-top:12px; overflow:hidden; }
+    .result-card-tags span { padding:4px 7px; border-radius:99px; background:var(--surface2); color:#d8b9bd; font-size:10px; white-space:nowrap; }
+    body.map-results-open #btn-view-results, body.map-results-open .btn-feed-map, body.map-results-open .btn-locate-map { display:none!important; }
+    .sidebar.open ~ .app-tabs, .detail.open ~ .app-tabs { display:none; }
   }
 
   @media (max-width: 700px) {
@@ -975,7 +1006,6 @@
     }
     .topbar-search-row .logo-lockup { display:flex; }
     .topbar-search-row .topbar-actions { display:flex; }
-    .topbar-actions .app-menu-wrap,
     .topbar-actions #btn-save { display:none; }
     .topbar-actions #account-button { display:inline-flex; padding:7px 10px; font-size:11px; white-space:nowrap; }
     .topbar-search-row .search-box { flex-basis: 100%; }
@@ -1090,23 +1120,6 @@
     <div class="search-results" id="search-results"></div>
   </div>
   <div class="topbar-actions">
-    <div class="app-menu-wrap">
-      <button class="app-menu-btn" id="app-menu-btn" onclick="toggleAppMenu(event)" title="메뉴" aria-haspopup="true" aria-expanded="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-      </button>
-      <div class="app-menu" id="app-menu" role="menu">
-        <button class="app-menu-item" role="menuitem" onclick="appMenuAction(toggleSidebar)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>상세 필터</button>
-        <button class="app-menu-item" role="menuitem" onclick="appMenuAction(openTasteModal)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg>내 취향 찾기</button>
-        <button class="app-menu-item" role="menuitem" onclick="appMenuAction(showGoneStores)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V10.5a6 6 0 0 1 12 0V21z"/><path d="M4 21h16"/><path d="M12 6.8v4.2M9.9 8.9h4.2"/></svg>사라진 가게</button>
-        <div class="app-menu-sep"></div>
-        <button class="app-menu-item" role="menuitem" onclick="appMenuAction(cycleLang)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3.4 9.2h17.2M3.4 14.8h17.2"/></svg>언어 · Language</button>
-        <button class="app-menu-item" role="menuitem" onclick="appMenuAction(cycleTheme)"><svg viewBox="0 0 20 20" aria-hidden="true"><defs><clipPath id="menu-theme-clip"><circle cx="10" cy="10" r="9"/></clipPath></defs><g clip-path="url(#menu-theme-clip)"><rect x="0" y="0" width="10" height="20" fill="#e8362a"/><rect x="10" y="0" width="10" height="20" fill="#1833db"/></g><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>테마 색상</button>
-        <div class="app-menu-sep"></div>
-        <button class="app-menu-item" id="congestBadge" role="menuitem" onclick="appMenuAction(showCongestForecast)"><span id="congestDot" style="width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none"></span>불러오는 중…</button>
-        <button class="app-menu-item" role="menuitem" onclick="appMenuAction(HongdaeFeedback.open)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1-4Z"/></svg>피드백·제보하기</button>
-        <a class="app-menu-item" id="admin-menu-link" role="menuitem" href="admin.html" hidden>관리자 도구</a>
-      </div>
-    </div>
     <button class="btn-directions" id="btn-save" onclick="showBookmarks()" title="저장한 가게"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 20.6S3.4 15 3.4 8.9A4.9 4.9 0 0 1 12 6a4.9 4.9 0 0 1 8.6 2.9C20.6 15 12 20.6 12 20.6z"></path></svg></button>
     <button class="btn-bookmarks" id="account-button" onclick="HongdaePlatform.openDialog()">로그인</button>
   </div>
@@ -1114,13 +1127,11 @@
 
 <div class="category-bar" id="category-bar">
   <button class="hla-banner" id="hongdae-mode-banner" onclick="HongdaeLocal.openHongdaeMode()" title="업종 말고 감성으로 장소 찾기"><span aria-hidden="true">💊</span><b>홍대병</b></button>
-  <button class="cat-toggle" id="chip-indie" onclick="toggleIndieOnly(this)" title="대형 프랜차이즈를 숨기고 홍대 로컬·인디 매장만 봅니다"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.2"></circle><circle cx="12" cy="12" r="2.1"></circle><circle cx="12" cy="12" r="0.4" fill="currentColor" stroke="none"></circle><path d="M12 6.4v0M17.6 12h0M12 17.6v0M6.4 12h0" stroke-width="1.1" opacity="0.55"></path></svg>로컬 인디</button>
   <button class="chip" id="chip-restaurant" onclick="selectCategoryBar('restaurant', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13h16c0 4-3.6 7-8 7s-8-3-8-7ZM12 13V6M8 8l1.5 2M16 8l-1.5 2"></path></svg>음식점</button>
   <button class="chip" id="chip-cafe" onclick="selectCategoryBar('cafe', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4ZM16 10h2a2 2 0 0 1 0 5h-2M8 6V4M12 6V4"></path></svg>카페</button>
   <button class="chip" id="chip-bar" onclick="selectCategoryBar('bar', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12l-5 7v6h3v2H8v-2h3v-6ZM8 7h8"></path></svg>주점</button>
   <button class="chip" id="chip-studentzone" onclick="selectCategoryBar('studentzone', this)" title="홍대생 명예학식 + 총학생회 제휴 업체만 모아봅니다"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 8l10 5 10-5-10-5Z"></path><path d="M6 10.5V16c0 1.5 2.5 3 6 3s6-1.5 6-3v-5.5"></path><path d="M22 8v6"></path></svg>홍대생 존</button>
   <button class="chip" onclick="selectCategoryBar('entertainment', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17.5V6l8-2v11M9 17.5a2.3 2.3 0 1 1-4.6 0 2.3 2.3 0 0 1 4.6 0ZM17 15a2.3 2.3 0 1 1-4.6 0 2.3 2.3 0 0 1 4.6 0Z"></path></svg>엔터테인먼트</button>
-  <button class="chip" onclick="selectCategoryBar('gone', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 20v-9a6 6 0 0 1 12 0v9l-2-1.6-2 1.6-2-1.6L10 20l-2-1.6ZM9.5 11h.01M14.5 11h.01"></path></svg>사라진 가게</button>
 </div>
 </div>
 
@@ -1172,7 +1183,7 @@
     </button>
 
     <!-- 큐레이션 피드 진입 버튼 — 현위치 버튼 바로 아래, 뉴스피드 아이콘 -->
-    <button class="btn-feed-map" id="btn-curated-feed" onclick="openCuratedFeed()" aria-label="홍익인 큐레이션" title="홍익인 큐레이션">
+    <button class="btn-feed-map" id="btn-curated-feed" onclick="HongdaeFeed.open()" aria-label="홍대 피드" title="홍대 피드">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"></rect><path d="M3 9h18M8 4v5"></path><path d="M11 13h7M11 16.5h7M6 13h1.5M6 16.5h1.5"></path></svg>
       <span class="feed-dot" id="feed-dot" style="display:none"></span>
     </button>
@@ -2339,7 +2350,7 @@ let map, markers = [], storeMarkers = [], storeLabelOverlays = [], clusterer, ov
 let userLocationOverlay = null;
 let userLocationWatchId = null;
 let userLat = null, userLng = null;
-let indieOnly = localStorage.getItem('indieOnly') !== '0'; // 기본 켜짐(프랜차이즈 숨김). 사용자가 직접 끄면(=='0') 그때만 전체 표시
+let indieOnly = false; // 로컬·인디 탐색은 홍대병 감성 선택 안에서만 적용
 let currentFilter = 'all', searchText = '', selectedId = null;
 let boundsFilter = null; // '이 지역에서 검색' 클릭 시 현재 지도 화면(bounds)으로 한 번 좁혀서 보여줌
 // 아래 4개는 원래 각자 쓰이는 함수 바로 위에 선언돼 있었는데, 카카오맵 로드 콜백이
@@ -3376,7 +3387,7 @@ function renderListImpl() {
   // "사라진 가게" 모드에서는 몇 개가 등록돼 있든 상관없이 계속 추가할 수 있게,
   // 리스트 맨 위에 항상 등록 버튼을 띄워둔다 (예전엔 리스트가 비어있을 때만 보여서 1개 등록하면 사라지는 버그가 있었음).
   const goneAddButtonHtml = isGoneMode
-    ? `<button class="map-btn" style="width:100%;margin-bottom:10px" onclick="openModal('closed')">+ 사라진 가게 제보하기</button>`
+    ? `<button class="map-btn" style="width:100%;margin-bottom:10px" onclick="HongdaeFeedback.open('place')">+ 사라진 가게 제보하기</button>`
     : '';
 
   // 정렬 트리거 버튼/리스트는 왼쪽 사이드바에서 더 이상 노출하지 않음 — 결과는 항상 중앙 모달에서만 보여줌

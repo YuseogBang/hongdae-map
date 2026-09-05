@@ -29,9 +29,10 @@
   function openTasteJourney() {
     const overlay = ensureOverlay(); let step = 0; const picks = new Set(userTastes);
     const questions = [
-      { title:'혼자일 때의 한 끼', copy:'더 자주 찾는 쪽을 골라주세요.', choices:[['혼밥','혼자라도 편안한 자리'],['데이트','누군가와 오래 머물고 싶은 자리']] },
-      { title:'공간의 온도', copy:'홍대에서 끌리는 분위기를 골라주세요.', choices:[['조용한','대화와 작업에 집중되는 곳'],['시끌벅적','에너지 있는 밤의 분위기']] },
-      { title:'오늘의 기준', copy:'마지막으로 가장 중요한 한 가지를 골라주세요.', choices:[['가성비','부담 없이 자주 가는 곳'],['인스타감성','새롭고 기억에 남는 곳']] }
+      { title:'누구와 가나요?', copy:'가장 자주 찾는 상황을 골라주세요.', choices:[['혼밥','혼자 있어도 어색하지 않은 곳'],['데이트','둘이 오래 머물기 좋은 곳'],['로컬단골','관광보다 반복해서 찾는 곳']] },
+      { title:'공간의 온도', copy:'지금 끌리는 분위기에 가까운 쪽을 고르세요.', choices:[['조용한','대화와 작업에 집중되는 곳'],['시끌벅적','사람과 음악의 밀도가 높은 곳'],['인스타감성','공간의 장면이 또렷한 곳']] },
+      { title:'무엇을 먹고 싶나요?', copy:'메뉴를 고를 때 더 중요한 기준입니다.', choices:[['매운맛','맵고 자극적인 메뉴'],['디저트','커피 뒤에 디저트까지'],['술안주','한 잔과 함께 먹기 좋은 메뉴']] },
+      { title:'장소를 고르는 기준', copy:'마지막으로 포기하기 어려운 한 가지를 고르세요.', choices:[['가성비','부담 없이 자주 갈 수 있는 곳'],['노포','시간의 흔적이 남은 곳'],['홍대병','검색보다 취향을 믿게 되는 곳']] }
     ];
     const render = () => { const question = questions[step]; overlay.innerHTML = `<div class="xp-sheet"><div class="xp-handle"></div><div class="xp-top"><span class="xp-kicker">TASTE START · ${step + 1}/3</span><button class="xp-close">✕</button></div><h2 class="xp-title">${question.title}</h2><p class="xp-copy">${question.copy}</p><div class="xp-progress">${questions.map((_, index) => `<span class="${index <= step ? 'on' : ''}"></span>`).join('')}</div>${question.choices.map(([tag, description]) => `<button class="xp-choice" data-tag="${tag}"><span><strong>${tag}</strong><small>${description}</small></span><span class="xp-choice-mark">›</span></button>`).join('')}<button class="xp-secondary" data-skip>그냥 둘러볼게요</button></div>`; $('.xp-close', overlay).onclick = close; $('[data-skip]', overlay).onclick = close; overlay.querySelectorAll('[data-tag]').forEach((button) => button.onclick = () => { picks.add(button.dataset.tag); if (step < questions.length - 1) { step += 1; render(); return; } userTastes = [...picks]; localStorage.setItem('userTastes', JSON.stringify(userTastes)); close(); showTasteView(); HongdaeUI.openResults(); }); };
     render(); overlay.classList.add('open');
